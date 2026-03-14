@@ -64,11 +64,29 @@ class NanaBananaService:
     ) -> dict:
         import time
         from datetime import datetime, timezone
+        from pathlib import Path
 
         avatar_id = f"avatar-{int(time.time())}"
+        filename = f"{avatar_id}.png"
+
+        # Create a real placeholder image file so /media/avatars/ serves it
+        avatars_dir = settings.media_root / "avatars"
+        avatars_dir.mkdir(parents=True, exist_ok=True)
+        placeholder_path = avatars_dir / filename
+
+        # Generate a minimal 1x1 PNG placeholder (valid PNG bytes)
+        png_header = (
+            b'\x89PNG\r\n\x1a\n'  # PNG signature
+            b'\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02'
+            b'\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx'
+            b'\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18\xd8N'
+            b'\x00\x00\x00\x00IEND\xaeB`\x82'
+        )
+        placeholder_path.write_bytes(png_header)
+
         return {
             "avatar_id": avatar_id,
-            "image_url": f"/media/avatars/{avatar_id}.png",
+            "image_url": f"/media/avatars/{filename}",
             "prompt": prompt,
             "source": source,
             "provider": "nano-banana-2",

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useStudioStore } from '../../stores/useStudioStore'
 import { useFeedStore } from '../../stores/useFeedStore'
 import { getArtistInfluences } from '../../api/feed'
@@ -6,6 +7,7 @@ import TrackGallery from './TrackGallery'
 import ClipGenerator from './ClipGenerator'
 
 export default function ArtistProfile() {
+  const navigate = useNavigate()
   const { artist, published_tracks, current_track } = useStudioStore()
   const { artist_influences, setArtistInfluences } = useFeedStore()
 
@@ -81,7 +83,7 @@ export default function ArtistProfile() {
         </p>
 
         {/* Start New Session CTA */}
-        <button className="mt-6 btn-primary flex items-center gap-2 text-sm">
+        <button onClick={() => navigate('/session')} className="mt-6 btn-primary flex items-center gap-2 text-sm">
           <svg
             className="w-4 h-4"
             viewBox="0 0 24 24"

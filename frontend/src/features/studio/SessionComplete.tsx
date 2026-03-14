@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../../api/client";
 import { useStudioStore } from "../../stores/useStudioStore";
 import type { TrackRecord } from "../../types/studio";
@@ -14,7 +15,8 @@ function formatDuration(seconds: number) {
 }
 
 export function SessionComplete() {
-  const { session_artist: artist, current_track, fan_influences, setCurrentTrack, addPublishedTrack } = useStudioStore();
+  const navigate = useNavigate();
+  const { session_artist: artist, current_track, fan_influences, setCurrentTrack, addPublishedTrack, endSession } = useStudioStore();
   const [isPublishing, setIsPublishing] = useState(false);
   const [previewAudio, setPreviewAudio] = useState<HTMLAudioElement | null>(null);
 
@@ -60,8 +62,9 @@ export function SessionComplete() {
         }),
       });
       setCurrentTrack(track);
-      // Add to published tracks gallery
       addPublishedTrack(track);
+      endSession();
+      navigate("/studio");
     } finally {
       setIsPublishing(false);
     }
