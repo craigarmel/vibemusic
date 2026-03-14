@@ -1,9 +1,12 @@
+import logging
 import time
 import uuid
 
 from fastapi import APIRouter, HTTPException
 
 from app.models.artist import ArtistCreateRequest, LoreData
+
+logger = logging.getLogger(__name__)
 from app.services import gemini, nano_banana
 from app import storage
 
@@ -16,6 +19,7 @@ async def create_artist(request: ArtistCreateRequest):
     try:
         lore_data = await gemini.generate_lore(request.prompt)
     except Exception as e:
+        logger.exception("Gemini lore generation failed")
         error_msg = str(e)
         if "timeout" in error_msg.lower() or "rate" in error_msg.lower():
             raise HTTPException(
