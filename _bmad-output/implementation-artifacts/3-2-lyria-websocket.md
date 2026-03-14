@@ -1,6 +1,6 @@
 # Story 3.2: Lyria RealTime WebSocket Audio Streaming
 
-Status: ready-for-dev
+Status: review
 
 ---
 

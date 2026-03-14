@@ -1,6 +1,6 @@
 # Story 3.1: Session Launch with Camera/Mic Activation
 
-Status: ready-for-dev
+Status: review
 
 ---
 

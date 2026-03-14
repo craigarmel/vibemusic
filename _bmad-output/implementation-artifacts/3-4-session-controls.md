@@ -1,6 +1,6 @@
 # Story 3.4: Live Session Controls
 
-Status: ready-for-dev
+Status: review
 
 ---
 

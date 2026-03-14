@@ -54,16 +54,16 @@ development_status:
   epic-2: in-progress
   2-1-lore-generation-gemini: done
   2-2-avatar-generation-nano-banana: done
-  2-3-artist-profile-view: backlog
+  2-3-artist-profile-view: review
   epic-2-retrospective: optional
 
   # Epic 3: Live Music Session
-  epic-3: backlog
-  3-1-session-launch-camera-mic: backlog
-  3-2-lyria-realtime-websocket-audio: backlog
-  3-3-realtime-audio-visualizer: backlog
-  3-4-live-session-controls: backlog
-  3-5-session-completion-track-publication: backlog
+  epic-3: in-progress
+  3-1-session-launch-camera-mic: ready-for-dev
+  3-2-lyria-realtime-websocket-audio: ready-for-dev
+  3-3-realtime-audio-visualizer: ready-for-dev
+  3-4-live-session-controls: ready-for-dev
+  3-5-session-completion-track-publication: ready-for-dev
   epic-3-retrospective: optional
 
   # Epic 4: Video Clip Generation

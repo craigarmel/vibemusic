@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { createArtist } from '../../api/artist'
 import { useStudioStore } from '../../stores/useStudioStore'
 import LoadingSpinner from '../../components/LoadingSpinner'

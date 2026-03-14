@@ -1,6 +1,6 @@
 # Story 3.5: Session Completion & Track Publication
 
-Status: ready-for-dev
+Status: review
 
 ---
 
