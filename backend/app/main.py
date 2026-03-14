@@ -4,13 +4,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.config import settings
 from app.routers import artist, audio, video, feed
 
 app = FastAPI(title="Synthetica API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[settings.frontend_origin, settings.frontend_origin_alt],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

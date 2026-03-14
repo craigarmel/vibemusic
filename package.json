@@ -1,0 +1,13 @@
+{
+  "name": "vibemusic",
+  "private": true,
+  "packageManager": "pnpm@10.7.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel --stream --filter ./frontend --filter ./backend dev",
+    "build": "pnpm --filter ./frontend build",
+    "dev:frontend": "pnpm --filter ./frontend dev",
+    "dev:backend": "pnpm --filter ./backend dev",
+    "install:frontend": "pnpm install",
+    "install:backend": "python3 -m pip install -r backend/requirements.txt"
+  }
+}
