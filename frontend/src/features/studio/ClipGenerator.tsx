@@ -14,7 +14,7 @@ export default function ClipGenerator() {
   const [clipId, setClipId] = useState<string | null>(null)
   const [taskError, setTaskError] = useState<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
 
   // Clean up polling on unmount
@@ -85,19 +85,15 @@ export default function ClipGenerator() {
   }
 
   const handlePlayPause = () => {
-    if (!videoUrl) return
+    if (!videoRef.current) return
 
-    if (isPlaying && audioRef.current) {
-      audioRef.current.pause()
+    if (isPlaying) {
+      videoRef.current.pause()
       setIsPlaying(false)
-      return
+    } else {
+      videoRef.current.play().catch(() => setIsPlaying(false))
+      setIsPlaying(true)
     }
-
-    const audio = new Audio(videoUrl)
-    audio.addEventListener('ended', () => setIsPlaying(false), { once: true })
-    audio.play().catch(() => setIsPlaying(false))
-    audioRef.current = audio
-    setIsPlaying(true)
   }
 
   // Must have both artist and a track to generate a clip
@@ -177,73 +173,55 @@ export default function ClipGenerator() {
         </div>
       )}
 
-      {/* Completed: show preview */}
+      {/* Completed: show video preview */}
       {videoUrl && !is_generating_video && (
         <div className="mb-4">
-          <div className="rounded-xl overflow-hidden border border-neon-cyan/20 bg-black/40">
-            {/* Preview card */}
-            <div className="p-4">
-              <div className="flex items-center gap-4">
-                {/* Play button */}
+          <div className="rounded-xl overflow-hidden border border-neon-cyan/20 bg-black">
+            {/* Video player — 9:16 aspect ratio */}
+            <div className="relative" style={{ aspectRatio: '9/16', maxHeight: '400px', margin: '0 auto' }}>
+              <video
+                ref={videoRef}
+                src={videoUrl}
+                className="w-full h-full object-cover rounded-xl"
+                playsInline
+                loop
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onEnded={() => setIsPlaying(false)}
+              />
+              {/* Play/pause overlay */}
+              {!isPlaying && (
                 <button
                   onClick={handlePlayPause}
-                  className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-r from-neon-cyan to-neon-purple flex items-center justify-center hover:scale-105 transition-transform"
-                  style={{
-                    boxShadow: '0 0 20px rgba(0, 240, 255, 0.3)',
-                  }}
+                  className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/20 transition-colors"
                 >
-                  {isPlaying ? (
-                    <svg
-                      className="w-5 h-5 text-white"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <rect x="6" y="4" width="4" height="16" />
-                      <rect x="14" y="4" width="4" height="16" />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-5 h-5 text-white ml-0.5"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
+                  <div
+                    className="w-14 h-14 rounded-full bg-gradient-to-r from-neon-cyan to-neon-purple flex items-center justify-center"
+                    style={{ boxShadow: '0 0 25px rgba(0, 240, 255, 0.4)' }}
+                  >
+                    <svg className="w-6 h-6 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor">
                       <polygon points="5 3 19 12 5 21 5 3" />
                     </svg>
-                  )}
+                  </div>
                 </button>
+              )}
+            </div>
 
-                {/* Clip info */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium truncate">
-                    Clip {clipId ? clipId.slice(0, 8) : ''}
-                  </p>
-                  <p className="text-text-muted text-xs">
-                    9:16 vertical &middot; {current_track.duration_seconds
-                      ? `${Math.floor(current_track.duration_seconds / 60)}:${String(Math.floor(current_track.duration_seconds % 60)).padStart(2, '0')}`
-                      : '0:10'}
-                  </p>
-                </div>
-
-                {/* Status badge */}
-                <span className="text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/20">
-                  Ready
-                </span>
+            {/* Clip info bar */}
+            <div className="p-3 flex items-center justify-between">
+              <div>
+                <p className="text-white text-sm font-medium">
+                  Clip {clipId ? clipId.slice(0, 8) : ''}
+                </p>
+                <p className="text-text-muted text-xs">
+                  9:16 vertical &middot; {current_track.duration_seconds
+                    ? `${Math.floor(current_track.duration_seconds / 60)}:${String(Math.floor(current_track.duration_seconds % 60)).padStart(2, '0')}`
+                    : '0:10'}
+                </p>
               </div>
-
-              {/* Mini waveform */}
-              <div className="flex items-end gap-[2px] h-8 mt-4">
-                {Array.from({ length: 40 }, (_, i) => {
-                  const angle = (i / 40) * Math.PI * 2
-                  const height = 0.15 + Math.abs(Math.sin(angle * 2.5 + i * 0.3)) * 0.85
-                  return (
-                    <div
-                      key={i}
-                      className="flex-1 rounded-full bg-gradient-to-t from-neon-cyan to-neon-purple opacity-60"
-                      style={{ height: `${Math.max(10, height * 100)}%` }}
-                    />
-                  )
-                })}
-              </div>
+              <span className="text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/20">
+                Ready
+              </span>
             </div>
           </div>
         </div>

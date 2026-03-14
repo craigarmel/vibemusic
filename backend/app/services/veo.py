@@ -103,20 +103,40 @@ def _blocking_generate(prompt: str, avatar_path: Path | None) -> Path:
     operation = client.models.generate_videos(**generate_kwargs)
 
     # Poll until done
-    while not operation.done:
+    max_attempts = 60  # 10 minutes max
+    for attempt in range(max_attempts):
+        if operation.done:
+            break
         time.sleep(POLL_INTERVAL_SECONDS)
-        operation = client.operations.get(operation)
+        try:
+            operation = client.operations.get(operation)
+        except Exception as e:
+            logger.warning("Poll attempt %d failed: %s", attempt, e)
 
     # Ensure output directory exists
     clips_dir = settings.media_root / "clips"
     clips_dir.mkdir(parents=True, exist_ok=True)
-
     clip_id = str(uuid.uuid4())
     clip_path = clips_dir / f"{clip_id}.mp4"
 
+    # Check if generation succeeded
+    if not operation.done:
+        raise RuntimeError("Veo 3.1 video generation timed out after 10 minutes")
+
+    if operation.response is None:
+        error_msg = getattr(operation, 'error', 'Unknown error')
+        raise RuntimeError(f"Veo 3.1 generation failed: {error_msg}")
+
+    if not operation.response.generated_videos:
+        raise RuntimeError("Veo 3.1 returned no videos — prompt may have been filtered")
+
     generated_video = operation.response.generated_videos[0]
-    client.files.download(file=generated_video.video)
-    generated_video.video.save(str(clip_path))
+
+    try:
+        client.files.download(file=generated_video.video)
+        generated_video.video.save(str(clip_path))
+    except Exception as e:
+        raise RuntimeError(f"Failed to download/save Veo video: {e}")
 
     logger.info("Veo 3.1 video saved to %s", clip_path)
     return clip_path
