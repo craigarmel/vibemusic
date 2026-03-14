@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type {
+  AvatarAsset,
   Artist,
   AudioParams,
   FanInfluence,
@@ -18,6 +19,11 @@ interface StudioState {
   audio_params: AudioParams;
   fan_influences: FanInfluence[];
   current_track: TrackRecord | null;
+  music_prompt: string;
+  performance_notes: string;
+  avatar_prompt: string;
+  avatar_reference_image: string | null;
+  generated_avatar: AvatarAsset | null;
   setCameraStream: (stream: MediaStream | null) => void;
   setSessionError: (message: string | null) => void;
   startSession: (session: SessionRecord, stream: MediaStream) => void;
@@ -27,6 +33,11 @@ interface StudioState {
   addFanInfluence: (influence: FanInfluence) => void;
   resetFanInfluences: () => void;
   setCurrentTrack: (track: TrackRecord | null) => void;
+  setMusicPrompt: (value: string) => void;
+  setPerformanceNotes: (value: string) => void;
+  setAvatarPrompt: (value: string) => void;
+  setAvatarReferenceImage: (value: string | null) => void;
+  setGeneratedAvatar: (avatar: AvatarAsset | null) => void;
 }
 
 export const useStudioStore = create<StudioState>((set) => ({
@@ -52,6 +63,11 @@ export const useStudioStore = create<StudioState>((set) => ({
   },
   fan_influences: [],
   current_track: null,
+  music_prompt: "",
+  performance_notes: "",
+  avatar_prompt: "Chrome vocalist, cinematic lighting, futuristic streetwear",
+  avatar_reference_image: null,
+  generated_avatar: null,
   setCameraStream: (stream) => set({ camera_stream: stream }),
   setSessionError: (message) => set({ session_error: message }),
   startSession: (session, stream) =>
@@ -63,6 +79,9 @@ export const useStudioStore = create<StudioState>((set) => ({
       session_error: null,
       current_track: null,
       fan_influences: [],
+      music_prompt: session.music_prompt,
+      performance_notes: session.performance_notes,
+      avatar_prompt: session.avatar_prompt,
     }),
   endSession: () =>
     set({
@@ -79,4 +98,13 @@ export const useStudioStore = create<StudioState>((set) => ({
     set((state) => ({ fan_influences: [...state.fan_influences, influence] })),
   resetFanInfluences: () => set({ fan_influences: [] }),
   setCurrentTrack: (track) => set({ current_track: track }),
+  setMusicPrompt: (value) => set({ music_prompt: value }),
+  setPerformanceNotes: (value) => set({ performance_notes: value }),
+  setAvatarPrompt: (value) => set({ avatar_prompt: value }),
+  setAvatarReferenceImage: (value) => set({ avatar_reference_image: value }),
+  setGeneratedAvatar: (avatar) =>
+    set((state) => ({
+      generated_avatar: avatar,
+      artist: avatar ? { ...state.artist, avatar_url: avatar.image_url } : state.artist,
+    })),
 }));

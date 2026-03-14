@@ -89,6 +89,10 @@ class LyriaService:
         artist_id: str,
         output_path: Path,
         influences: list[str],
+        music_prompt: str = "",
+        performance_notes: str = "",
+        avatar_url: str | None = None,
+        generation_target: str = "suno",
     ) -> dict:
         session = self.get_session(session_id)
         final_audio = b"".join(session.captured_audio[-12:]) or session.generate_chunk()
@@ -109,6 +113,10 @@ class LyriaService:
             "created_at": datetime.now(tz=timezone.utc),
             "status": "draft",
             "influences": influences,
+            "music_prompt": music_prompt,
+            "performance_notes": performance_notes,
+            "avatar_url": avatar_url,
+            "generation_target": generation_target,
         }
 
 

@@ -82,6 +82,24 @@ export function SessionComplete() {
         Final track generated for {artist.name}.
       </p>
 
+      {current_track.avatar_url ? (
+        <div className="mb-6 flex items-center gap-4 rounded-[1.6rem] border border-white/10 bg-black/25 p-4">
+          <img
+            src={current_track.avatar_url}
+            alt="Session avatar"
+            className="h-20 w-20 rounded-[1.2rem] object-cover"
+          />
+          <div>
+            <div className="text-xs uppercase tracking-[0.2em] text-white/45">
+              {current_track.generation_target ?? "suno"} package
+            </div>
+            <p className="mt-2 text-sm text-white/72">
+              Prompt, live backing track, vocal rough and avatar are bundled for the final song generation flow.
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       <div className="mb-6 rounded-[1.75rem] border border-white/10 bg-black/25 p-5">
         <div className="mb-4 flex items-center justify-between">
           <button
@@ -107,6 +125,16 @@ export function SessionComplete() {
           ))}
         </div>
       </div>
+
+      {current_track.music_prompt ? (
+        <div className="mb-6 rounded-[1.5rem] border border-[#9fffe0]/15 bg-[#9fffe0]/6 p-4">
+          <div className="text-xs uppercase tracking-[0.2em] text-[#bffff0]">Music brief</div>
+          <p className="mt-2 text-sm text-white/80">{current_track.music_prompt}</p>
+          {current_track.performance_notes ? (
+            <p className="mt-2 text-sm text-white/58">{current_track.performance_notes}</p>
+          ) : null}
+        </div>
+      ) : null}
 
       {aggregated.length > 0 && (
         <div className="mb-6">

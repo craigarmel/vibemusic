@@ -32,6 +32,10 @@ async def create_session(request: SessionCreateRequest):
         "artist_id": request.artist_id,
         "start_time": utc_now(),
         "status": "active",
+        "music_prompt": request.music_prompt,
+        "performance_notes": request.performance_notes,
+        "avatar_prompt": request.avatar_prompt,
+        "avatar_url": request.avatar_url,
     }
     sessions[session["session_id"]] = session
     return {"status": "success", "data": SessionResponse.model_validate(session).model_dump(mode="json")}
@@ -46,7 +50,16 @@ async def complete_session(session_id: str, request: SessionCompleteRequest):
     session["status"] = "completed"
     track_id = str(uuid4())
     output_path = settings.media_root / "audio" / f"{track_id}.wav"
-    track = lyria_service.build_final_track(session_id, request.artist_id, output_path, request.influences)
+    track = lyria_service.build_final_track(
+        session_id,
+        request.artist_id,
+        output_path,
+        request.influences,
+        music_prompt=request.music_prompt,
+        performance_notes=request.performance_notes,
+        avatar_url=request.avatar_url,
+        generation_target=request.generation_target,
+    )
     tracks[track_id] = track
     return {"status": "success", "data": TrackResponse.model_validate(track).model_dump(mode="json")}
 

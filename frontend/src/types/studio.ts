@@ -3,6 +3,18 @@ export interface Artist {
   name: string;
   genre_tags: string[];
   biography: string;
+  avatar_url?: string;
+}
+
+export type AvatarSource = "prompt" | "camera" | "upload";
+
+export interface AvatarAsset {
+  avatar_id: string;
+  image_url: string;
+  prompt: string;
+  source: AvatarSource;
+  provider: string;
+  created_at: string;
 }
 
 export interface SessionRecord {
@@ -10,6 +22,10 @@ export interface SessionRecord {
   artist_id: string;
   start_time: string;
   status: "active" | "completed";
+  music_prompt: string;
+  performance_notes: string;
+  avatar_prompt: string;
+  avatar_url: string | null;
 }
 
 export interface AudioParams {
@@ -34,4 +50,8 @@ export interface TrackRecord {
   created_at: string;
   status: "draft" | "published";
   influences: string[];
+  music_prompt?: string;
+  performance_notes?: string;
+  avatar_url?: string | null;
+  generation_target?: string;
 }
