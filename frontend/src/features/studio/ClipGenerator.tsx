@@ -9,7 +9,7 @@ export default function ClipGenerator() {
   const { artist, current_track, is_generating_video, setGeneratingVideo, setError } =
     useStudioStore()
 
-  const [taskId, setTaskId] = useState<string | null>(null)
+  const [, setTaskId] = useState<string | null>(null)
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const [clipId, setClipId] = useState<string | null>(null)
   const [taskError, setTaskError] = useState<string | null>(null)
