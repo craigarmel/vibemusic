@@ -9,9 +9,16 @@ from app.routers import artist, audio, video, feed
 
 app = FastAPI(title="Synthetica API")
 
+def _cors_origins() -> list[str]:
+    origins = [settings.frontend_origin, settings.frontend_origin_alt]
+    if settings.frontend_origins_extra:
+        origins.extend(o.strip() for o in settings.frontend_origins_extra.split(",") if o.strip())
+    return origins
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_origin, settings.frontend_origin_alt],
+    allow_origins=_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
