@@ -108,10 +108,10 @@ async def audio_stream(websocket: WebSocket, session_id: str):
                 message_type = payload.get("type")
                 data = payload.get("data", {})
                 if message_type in {"setup", "music_generation_config"}:
-                    lyria_service.update_session(session_id, data)
+                    await lyria_service.update_session(session_id, data)
                 elif message_type == "playback_control":
                     control = data.get("control", "PLAY")
-                    lyria_service.set_control(session_id, control)
+                    await lyria_service.set_control(session_id, control)
                     if control == "STOP":
                         return
 

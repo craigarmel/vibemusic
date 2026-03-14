@@ -1,28 +1,125 @@
 """
-Veo 3.1 video generation service — MOCK implementation for hackathon.
+Veo 3.1 video generation service — REAL implementation using Google GenAI.
 
-For the hackathon demo, this service simulates video generation by:
-1. Accepting an artist_id + track_id
-2. Sleeping for 3 seconds to simulate processing
-3. Copying the track's audio file to the clips directory as a "fake video"
-4. Returning clip metadata
-
-The real implementation would call Veo 3.1 with the artist's avatar image
-and audio track to generate a 9:16 vertical video (10 seconds).
+Calls the Veo 3.1 API to generate 9:16 portrait music videos.
+If the artist has an avatar image, it is passed as image input for
+image-to-video generation so the avatar character appears in the clip.
 """
 
 from __future__ import annotations
 
 import asyncio
-import shutil
+import logging
+import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
+from google import genai
+from google.genai import types
+
+from app import storage
 from app.config import settings
 
+logger = logging.getLogger(__name__)
 
-MOCK_GENERATION_DELAY = 3.0  # seconds
+POLL_INTERVAL_SECONDS = 10
+
+
+def _build_prompt(artist_id: str) -> str:
+    """Build a music-video prompt from the artist's lore."""
+    artist = storage.artists.get(artist_id, {})
+    lore = artist.get("lore", {})
+    name = lore.get("name", "an AI musician")
+    genre = lore.get("genre", "electronic")
+    biography = lore.get("biography", "")
+    visual_style = lore.get("visual_style", "")
+    aesthetic = lore.get("aesthetic", "")
+
+    prompt_parts = [
+        f"A cinematic vertical music video for the artist {name}.",
+        f"Genre: {genre}." if genre else "",
+        f"Visual aesthetic: {visual_style or aesthetic}." if (visual_style or aesthetic) else "",
+        f"The artist: {biography[:200]}." if biography else "",
+        "Dynamic camera movement, dramatic lighting, high production value.",
+        "Portrait orientation 9:16 format, designed for mobile viewing.",
+    ]
+    return " ".join(part for part in prompt_parts if part)
+
+
+def _resolve_avatar_path(artist_id: str) -> Path | None:
+    """Return the local filesystem path of the artist avatar, or None."""
+    artist = storage.artists.get(artist_id, {})
+    avatar_url = artist.get("avatar_url")  # e.g. "/media/avatars/abc.png"
+    if not avatar_url:
+        return None
+
+    # avatar_url is like "/media/avatars/<file>", resolve to disk
+    relative = avatar_url.lstrip("/")  # "media/avatars/<file>"
+    # media_root is  …/backend/media, so strip the leading "media/" part
+    if relative.startswith("media/"):
+        relative = relative[len("media/"):]
+    path = settings.media_root / relative
+    if path.exists():
+        return path
+
+    return None
+
+
+def _blocking_generate(prompt: str, avatar_path: Path | None) -> Path:
+    """
+    Synchronous (blocking) call to Veo 3.1.
+
+    Returns the local Path where the generated video has been saved.
+    """
+    client = genai.Client(api_key=settings.google_ai_api_key)
+
+    generate_kwargs: dict = {
+        "model": "veo-3.1-generate-preview",
+        "prompt": prompt,
+        "config": types.GenerateVideosConfig(
+            aspect_ratio="9:16",
+        ),
+    }
+
+    # If we have an avatar, pass it as the image input for image-to-video
+    if avatar_path is not None:
+        try:
+            image_bytes = avatar_path.read_bytes()
+            # Determine MIME type from extension
+            suffix = avatar_path.suffix.lower()
+            mime_map = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}
+            mime_type = mime_map.get(suffix, "image/png")
+            avatar_image = types.Image(image_bytes=image_bytes, mime_type=mime_type)
+            generate_kwargs["image"] = avatar_image
+        except Exception:
+            logger.warning(
+                "Failed to load avatar image at %s; falling back to text-to-video",
+                avatar_path,
+                exc_info=True,
+            )
+
+    logger.info("Starting Veo 3.1 generation (avatar=%s)", avatar_path is not None)
+    operation = client.models.generate_videos(**generate_kwargs)
+
+    # Poll until done
+    while not operation.done:
+        time.sleep(POLL_INTERVAL_SECONDS)
+        operation = client.operations.get(operation)
+
+    # Ensure output directory exists
+    clips_dir = settings.media_root / "clips"
+    clips_dir.mkdir(parents=True, exist_ok=True)
+
+    clip_id = str(uuid.uuid4())
+    clip_path = clips_dir / f"{clip_id}.mp4"
+
+    generated_video = operation.response.generated_videos[0]
+    client.files.download(file=generated_video.video)
+    generated_video.video.save(str(clip_path))
+
+    logger.info("Veo 3.1 video saved to %s", clip_path)
+    return clip_path
 
 
 async def generate_clip(
@@ -31,35 +128,21 @@ async def generate_clip(
     audio_path: str,
 ) -> dict:
     """
-    Mock Veo 3.1 video generation.
+    Generate a music video clip via Veo 3.1.
 
-    Simulates async video generation by sleeping, then copying the audio
-    file to the clips directory as a placeholder.
+    The heavy network I/O + polling runs in a thread so the event loop
+    stays responsive.
 
-    Returns clip metadata dict.
+    Returns a clip metadata dict.
     """
-    clip_id = str(uuid.uuid4())
-    clip_filename = f"{clip_id}.mp4"
-    clips_dir = settings.media_root / "clips"
-    clips_dir.mkdir(parents=True, exist_ok=True)
-    clip_path = clips_dir / clip_filename
+    prompt = _build_prompt(artist_id)
+    avatar_path = _resolve_avatar_path(artist_id)
 
-    # Simulate generation delay
-    await asyncio.sleep(MOCK_GENERATION_DELAY)
+    # Run the blocking API call in a background thread
+    clip_path = await asyncio.to_thread(_blocking_generate, prompt, avatar_path)
 
-    # Copy the audio file as a fake video (hackathon mock)
-    source_path = settings.media_root.parent / audio_path.lstrip("/")
-    if not source_path.exists():
-        # Fallback: look relative to media root
-        source_path = settings.media_root / audio_path.replace("/media/", "")
-
-    if source_path.exists():
-        shutil.copy2(str(source_path), str(clip_path))
-    else:
-        # If audio file doesn't exist, create a minimal placeholder
-        clip_path.write_bytes(b"MOCK_VIDEO_PLACEHOLDER")
-
-    video_url = f"/media/clips/{clip_filename}"
+    clip_id = clip_path.stem  # uuid without extension
+    video_url = f"/media/clips/{clip_path.name}"
 
     return {
         "clip_id": clip_id,
