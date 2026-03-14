@@ -32,6 +32,11 @@ interface StudioState {
   setError: (error: string | null) => void;
   reset: () => void;
 
+  // --- Epic 4: Track gallery ---
+  published_tracks: TrackRecord[];
+  addPublishedTrack: (track: TrackRecord) => void;
+  setPublishedTracks: (tracks: TrackRecord[]) => void;
+
   // --- Epic 3: Live session ---
   /** Lightweight artist record used by the session flow.
    *  Populated from `artist` (ArtistData) when a session starts, or set
@@ -103,7 +108,16 @@ export const useStudioStore = create<StudioState>((set) => ({
       is_generating_audio: false,
       is_generating_video: false,
       error: null,
+      published_tracks: [],
     }),
+
+  // --- Epic 4 defaults ---
+  published_tracks: [],
+  addPublishedTrack: (track) =>
+    set((state) => ({
+      published_tracks: [...state.published_tracks, track],
+    })),
+  setPublishedTracks: (tracks) => set({ published_tracks: tracks }),
 
   // --- Epic 3 defaults ---
   session_artist: DEFAULT_SESSION_ARTIST,

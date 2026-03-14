@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { api } from "../../api/client";
 import { useCamera } from "../../hooks/useCamera";
 import { useStudioStore } from "../../stores/useStudioStore";
+import { useFeedStore } from "../../stores/useFeedStore";
+import { getArtistInfluences } from "../../api/feed";
 import type { AvatarAsset, AvatarSource, SessionRecord } from "../../types/studio";
 
 const QUICK_PROMPTS = [
@@ -49,7 +51,24 @@ export function SessionLauncher() {
     setAvatarReferenceImage,
     setGeneratedAvatar,
   } = useStudioStore();
+  const { artist_influences, setArtistInfluences } = useFeedStore();
   const { requestStream, isRequesting } = useCamera();
+
+  // Fetch fan influences for the current artist
+  useEffect(() => {
+    if (!artist?.artist_id) return;
+    let cancelled = false;
+
+    getArtistInfluences(artist.artist_id)
+      .then((res) => {
+        if (!cancelled && res.data) {
+          setArtistInfluences(res.data);
+        }
+      })
+      .catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [artist?.artist_id, setArtistInfluences]);
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -370,6 +389,29 @@ export function SessionLauncher() {
         <div className="mt-6 rounded-[1.6rem] border border-[#9fffe0]/15 bg-[#9fffe0]/6 p-4 text-sm text-[#dffff3]">
           Suno handoff bundle includes the live instrumental stem, the rough vocal take, the music prompt and the avatar.
         </div>
+
+        {/* Fan influence tags — shown before launch */}
+        {artist_influences && artist_influences.tags.length > 0 && (
+          <div className="mt-6 rounded-[1.6rem] border border-neon-magenta/20 bg-neon-magenta/[0.04] p-4">
+            <div className="mb-2 text-xs uppercase tracking-[0.2em] text-neon-magenta/70">
+              Fans want:
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {artist_influences.tags.slice(0, 3).map(({ tag, count }) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-neon-magenta/30 bg-neon-magenta/10 px-3 py-1.5 text-xs font-semibold text-neon-magenta"
+                >
+                  <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                  {tag}
+                  <span className="text-white/40 text-[10px]">x{count}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 flex flex-col gap-3">
           <button

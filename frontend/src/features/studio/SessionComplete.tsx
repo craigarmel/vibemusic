@@ -14,7 +14,7 @@ function formatDuration(seconds: number) {
 }
 
 export function SessionComplete() {
-  const { session_artist: artist, current_track, fan_influences, setCurrentTrack } = useStudioStore();
+  const { session_artist: artist, current_track, fan_influences, setCurrentTrack, addPublishedTrack } = useStudioStore();
   const [isPublishing, setIsPublishing] = useState(false);
   const [previewAudio, setPreviewAudio] = useState<HTMLAudioElement | null>(null);
 
@@ -60,6 +60,8 @@ export function SessionComplete() {
         }),
       });
       setCurrentTrack(track);
+      // Add to published tracks gallery
+      addPublishedTrack(track);
     } finally {
       setIsPublishing(false);
     }

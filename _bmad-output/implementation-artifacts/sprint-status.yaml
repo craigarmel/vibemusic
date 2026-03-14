@@ -67,15 +67,15 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: Video Clip Generation
-  epic-4: backlog
-  4-1-video-generation-veo: backlog
-  4-2-track-gallery-published-content: backlog
+  epic-4: in-progress
+  4-1-video-generation-veo: review
+  4-2-track-gallery-published-content: review
   epic-4-retrospective: optional
 
   # Epic 5: Fan Feed Experience
-  epic-5: backlog
-  5-1-fan-feed-vertical-video-scroll: backlog
-  5-2-feed-card-artist-overlay: backlog
+  epic-5: in-progress
+  5-1-fan-feed-vertical-video-scroll: review
+  5-2-feed-card-artist-overlay: review
   epic-5-retrospective: optional
 
   # Epic 6: Fan Influence & Feedback Loop

@@ -20,3 +20,19 @@ export interface InfluenceState {
   is_sending: boolean
   confirmation_shown: boolean
 }
+
+export interface TagCount {
+  tag: string
+  count: number
+}
+
+export interface ArtistInfluences {
+  artist_id: string
+  total_influences: number
+  tags: TagCount[]
+}
+
+export interface FeedResponse {
+  clips: FeedItem[]
+  total: number
+}

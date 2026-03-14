@@ -1,7 +1,31 @@
+import { useEffect } from 'react'
 import { useStudioStore } from '../../stores/useStudioStore'
+import { useFeedStore } from '../../stores/useFeedStore'
+import { getArtistInfluences } from '../../api/feed'
+import TrackGallery from './TrackGallery'
+import ClipGenerator from './ClipGenerator'
 
 export default function ArtistProfile() {
-  const { artist } = useStudioStore()
+  const { artist, published_tracks, current_track } = useStudioStore()
+  const { artist_influences, setArtistInfluences } = useFeedStore()
+
+  // Fetch fan influences when artist is loaded
+  useEffect(() => {
+    if (!artist?.artist_id) return
+    let cancelled = false
+
+    getArtistInfluences(artist.artist_id)
+      .then((res) => {
+        if (!cancelled && res.data) {
+          setArtistInfluences(res.data)
+        }
+      })
+      .catch(() => {
+        // Silently fail — influences are non-critical
+      })
+
+    return () => { cancelled = true }
+  }, [artist?.artist_id, setArtistInfluences])
 
   if (!artist || !artist.lore) return null
 
@@ -80,31 +104,70 @@ export default function ArtistProfile() {
         <StatCard
           icon="🎵"
           label="Tracks"
-          value={0}
-          subtitle="0 Unreleased"
+          value={published_tracks.length}
+          subtitle={`${published_tracks.filter(t => t.status === 'draft').length} Unreleased`}
         />
         <StatCard
           icon="⚡"
           label="Fan Influences"
-          value={0}
-          subtitle="—"
+          value={artist_influences?.total_influences ?? 0}
+          subtitle={
+            artist_influences && artist_influences.tags.length > 0
+              ? `Top: ${artist_influences.tags[0].tag}`
+              : '—'
+          }
         />
       </div>
+
+      {/* Fan Influence Tags — shown when influences exist */}
+      {artist_influences && artist_influences.tags.length > 0 && (
+        <div className="mb-10">
+          <h2 className="text-lg font-bold text-white mb-4">Fan Influences</h2>
+          <div className="glass rounded-2xl p-5">
+            <div className="flex flex-wrap gap-2">
+              {artist_influences.tags.slice(0, 6).map(({ tag, count }) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border border-neon-magenta/40 text-neon-magenta"
+                  style={{
+                    background: 'rgba(255, 0, 170, 0.08)',
+                    boxShadow: '0 0 10px rgba(255, 0, 170, 0.1)',
+                  }}
+                >
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                  {tag}
+                  <span className="text-white/50 text-[10px]">x{count}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Clip Generator */}
+      {current_track && (
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-white">Video Clip</h2>
+          </div>
+          <ClipGenerator />
+        </div>
+      )}
 
       {/* Published Tracks */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-white">Published Tracks</h2>
-          <button className="text-xs text-text-muted hover:text-neon-cyan transition-colors">
-            View All →
-          </button>
+          {published_tracks.length > 0 && (
+            <span className="text-xs text-text-muted">
+              {published_tracks.length} track{published_tracks.length !== 1 ? 's' : ''}
+            </span>
+          )}
         </div>
 
-        <div className="glass rounded-2xl p-8 flex items-center justify-center min-h-[120px]">
-          <p className="text-text-muted text-sm">
-            No tracks published yet. Start a session to create your first track.
-          </p>
-        </div>
+        <TrackGallery tracks={published_tracks} />
       </div>
 
       {/* Pulse glow animation */}

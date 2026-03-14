@@ -4,6 +4,7 @@ import Layout from '../../components/Layout'
 import LoreGenerator from './LoreGenerator'
 import AvatarGenerator from './AvatarGenerator'
 import ArtistProfile from './ArtistProfile'
+import TrackGallery from './TrackGallery'
 import Toast from '../../components/Toast'
 
 interface NavItem {
@@ -72,7 +73,7 @@ function SvgIcon({ d }: { d: string }) {
 }
 
 export default function StudioDashboard() {
-  const { artist, error, setError } = useStudioStore()
+  const { artist, error, setError, published_tracks } = useStudioStore()
   const hasArtist = artist !== null && artist.lore !== null
 
   const navItems = hasArtist ? profileNavItems : creatorNavItems
@@ -116,6 +117,22 @@ export default function StudioDashboard() {
                 {artist && <AvatarGenerator />}
               </div>
             </div>
+          </div>
+        )
+      case 'tracks':
+        return (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-2xl font-bold text-white mb-1">
+                  Track Gallery
+                </h1>
+                <p className="text-text-muted text-sm">
+                  {published_tracks.length} track{published_tracks.length !== 1 ? 's' : ''} published
+                </p>
+              </div>
+            </div>
+            <TrackGallery tracks={published_tracks} />
           </div>
         )
       default:
