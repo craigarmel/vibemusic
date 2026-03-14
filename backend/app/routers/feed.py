@@ -149,7 +149,7 @@ async def submit_influence(request: InfluenceRequest):
 async def get_artist_influences(artist_id: str):
     """Return aggregated influence tags for an artist."""
     artist_influences = [
-        inf for inf in storage.influences if inf["artist_id"] == artist_id
+        inf for inf in storage.influences if inf.get("artist_id") == artist_id
     ]
 
     tag_counts = Counter(inf["tag"] for inf in artist_influences)

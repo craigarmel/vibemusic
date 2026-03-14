@@ -63,10 +63,14 @@ export function SessionComplete() {
       });
       setCurrentTrack(track);
       addPublishedTrack(track);
-      endSession();
-      navigate("/studio");
+    } catch {
+      // Track may already be cleaned up — just publish with current data
+      const trackWithStatus = { ...current_track, status };
+      addPublishedTrack(trackWithStatus);
     } finally {
       setIsPublishing(false);
+      endSession();
+      navigate("/studio");
     }
   };
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, type ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useStudioStore } from '../../stores/useStudioStore'
 import Layout from '../../components/Layout'
 import LoreGenerator from './LoreGenerator'
@@ -73,6 +74,7 @@ function SvgIcon({ d }: { d: string }) {
 }
 
 export default function StudioDashboard() {
+  const navigate = useNavigate()
   const { artist, error, setError, published_tracks } = useStudioStore()
   const hasArtist = artist !== null && artist.lore !== null
 
@@ -188,6 +190,17 @@ export default function StudioDashboard() {
               </button>
             )}
           </nav>
+
+          {/* Fan Feed link */}
+          <div className="px-3 pb-3">
+            <button
+              onClick={() => navigate('/feed')}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm border border-neon-cyan/20 text-neon-cyan hover:bg-neon-cyan/10 transition-colors"
+            >
+              <SvgIcon d="M4.318 6.318a4.5 4.5 0 0 0 0 6.364L12 20.364l7.682-7.682a4.5 4.5 0 0 0-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 0 0-6.364 0z" />
+              <span>Fan Feed</span>
+            </button>
+          </div>
 
           <div className="px-4 py-4 border-t border-border-subtle">
             <div className="flex items-center gap-3">

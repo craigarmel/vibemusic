@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createArtist } from '../../api/artist'
+import { createArtist, generateAvatar } from '../../api/artist'
 import { useStudioStore } from '../../stores/useStudioStore'
 import LoadingSpinner from '../../components/LoadingSpinner'
 
@@ -13,7 +13,7 @@ function traitToWidth(trait: string, index: number): number {
 
 export default function LoreGenerator() {
   const [prompt, setPrompt] = useState('')
-  const { artist, is_generating_lore, setArtist, setGeneratingLore, setError } =
+  const { artist, is_generating_lore, is_generating_image, setArtist, setGeneratingLore, setGeneratingImage, updateArtist, setError } =
     useStudioStore()
 
   const handleGenerate = async () => {
@@ -25,12 +25,28 @@ export default function LoreGenerator() {
     try {
       const res = await createArtist(prompt)
       if (res.data) {
-        setArtist({
+        const newArtist = {
           artist_id: res.data.artist_id,
           prompt,
           lore: res.data.lore,
           avatar_url: null,
-        })
+        }
+        setArtist(newArtist)
+        setGeneratingLore(false)
+
+        // Auto-generate avatar right after lore
+        setGeneratingImage(true)
+        try {
+          const avatarRes = await generateAvatar(res.data.artist_id)
+          if (avatarRes.data) {
+            updateArtist({ avatar_url: avatarRes.data.avatar_url })
+          }
+        } catch {
+          // Avatar failed but lore is fine — don't block
+        } finally {
+          setGeneratingImage(false)
+        }
+        return
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate lore')
@@ -38,6 +54,8 @@ export default function LoreGenerator() {
       setGeneratingLore(false)
     }
   }
+
+  const isGenerating = is_generating_lore || is_generating_image
 
   return (
     <div className="space-y-6">
@@ -59,13 +77,18 @@ export default function LoreGenerator() {
         />
         <button
           onClick={handleGenerate}
-          disabled={is_generating_lore || !prompt.trim()}
+          disabled={isGenerating || !prompt.trim()}
           className="mt-4 btn-magenta w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {is_generating_lore ? (
             <>
               <LoadingSpinner size="sm" />
-              Generating...
+              Generating lore...
+            </>
+          ) : is_generating_image ? (
+            <>
+              <LoadingSpinner size="sm" />
+              Generating avatar...
             </>
           ) : (
             <>✦ GENERATE ARTIST & LORE</>

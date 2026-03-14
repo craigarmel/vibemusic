@@ -235,11 +235,12 @@ class LyriaService:
         generation_target: str = "suno",
     ) -> dict:
         session = self.get_session(session_id)
-        # Use up to the last 12 captured chunks (same policy as before)
-        final_audio = b"".join(session.captured_audio[-12:])
+        # Use ALL captured audio from the session
+        final_audio = b"".join(session.captured_audio)
         if not final_audio:
-            # Edge case: nothing captured – write silence so the WAV is valid
+            # Edge case: nothing captured – write 1 second of silence so the WAV is valid
             final_audio = b"\x00" * (SAMPLE_RATE * CHANNELS * BYTES_PER_SAMPLE)
+        logger.info("Building final track: %d chunks, %d bytes total", len(session.captured_audio), len(final_audio))
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with wave.open(str(output_path), "wb") as wav_file:

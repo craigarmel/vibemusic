@@ -64,15 +64,42 @@ export default function FeedCard({ item, isActive, onInfluenceClick }: FeedCardP
     console.log(`Navigate to artist: ${item.artist_id}`)
   }, [item.artist_id])
 
+  const isAudioOnly = item.video_url?.endsWith('.wav') || item.video_url?.endsWith('.mp3') || !item.video_url
+
   return (
     <div className="relative h-full w-full bg-black flex items-center justify-center overflow-hidden">
-      {/* Video element */}
+      {/* Background: avatar as cover when audio-only */}
+      {isAudioOnly && item.artist_avatar_url && (
+        <div className="absolute inset-0">
+          <img
+            src={item.artist_avatar_url}
+            alt=""
+            className="w-full h-full object-cover blur-2xl scale-110 opacity-40"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/80" />
+          {/* Centered avatar */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <img
+              src={item.artist_avatar_url}
+              alt={item.artist_name}
+              className="w-48 h-48 rounded-full object-cover neon-border"
+              style={{ boxShadow: '0 0 40px rgba(0, 240, 255, 0.3), 0 0 80px rgba(0, 240, 255, 0.1)' }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Background: gradient fallback when no avatar */}
+      {isAudioOnly && !item.artist_avatar_url && (
+        <div className="absolute inset-0 bg-gradient-to-br from-neon-purple/30 via-bg-dark to-neon-cyan/20" />
+      )}
+
+      {/* Video/Audio element */}
       <video
         ref={videoRef}
         src={item.video_url}
-        className="absolute inset-0 w-full h-full object-cover"
+        className={`absolute inset-0 w-full h-full object-cover ${isAudioOnly ? 'opacity-0' : ''}`}
         loop
-        muted
         playsInline
         preload="metadata"
         onClick={handleVideoTap}

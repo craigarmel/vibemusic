@@ -27,24 +27,23 @@ POLL_INTERVAL_SECONDS = 10
 
 
 def _build_prompt(artist_id: str) -> str:
-    """Build a music-video prompt from the artist's lore."""
+    """Build a safe music-video prompt from the artist's lore."""
     artist = storage.artists.get(artist_id, {})
     lore = artist.get("lore", {})
-    name = lore.get("name", "an AI musician")
-    genre = lore.get("genre", "electronic")
-    biography = lore.get("biography", "")
-    visual_style = lore.get("visual_style", "")
-    aesthetic = lore.get("aesthetic", "")
+    name = lore.get("name", "a musician")
 
-    prompt_parts = [
-        f"A cinematic vertical music video for the artist {name}.",
-        f"Genre: {genre}." if genre else "",
-        f"Visual aesthetic: {visual_style or aesthetic}." if (visual_style or aesthetic) else "",
-        f"The artist: {biography[:200]}." if biography else "",
-        "Dynamic camera movement, dramatic lighting, high production value.",
-        "Portrait orientation 9:16 format, designed for mobile viewing.",
-    ]
-    return " ".join(part for part in prompt_parts if part)
+    # Extract genre from personality traits (safer than biography)
+    traits = lore.get("personality_traits", [])
+    style_hint = f"Style inspired by {', '.join(traits[:2])}." if traits else "Electronic music aesthetic."
+
+    return (
+        f"A beautiful cinematic music video. Abstract visuals with neon lights, "
+        f"geometric shapes, and flowing particles in dark blue, cyan, and purple tones. "
+        f"{style_hint} "
+        f"Smooth camera movement through a futuristic digital landscape. "
+        f"Atmospheric lighting with lens flares and bokeh effects. "
+        f"Vertical 9:16 format, high production quality, no people shown."
+    )
 
 
 def _resolve_avatar_path(artist_id: str) -> Path | None:

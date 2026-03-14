@@ -30,12 +30,30 @@ export function useLyriaStream(
   const bufferQueueRef = useRef<AudioBuffer[]>([]);
   const playheadRef = useRef(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const onInfluenceRef = useRef(onInfluence);
+  onInfluenceRef.current = onInfluence;
+  const connectedSessionRef = useRef<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [analyserState, setAnalyserState] = useState<AnalyserNode | null>(null);
 
   useEffect(() => {
     if (!sessionId || !stream) {
       return;
     }
+
+    // Don't reconnect if already connected to this session
+    // Don't reconnect if already connected or connecting to this session
+    if (connectedSessionRef.current === sessionId && wsRef.current &&
+        (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
+      return;
+    }
+
+    // If there's an old socket still connecting/open, close it first
+    if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
+      wsRef.current.close();
+    }
+
+    connectedSessionRef.current = sessionId;
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const socket = new WebSocket(
@@ -54,10 +72,14 @@ export function useLyriaStream(
     audioContextRef.current = context;
     outputNodeRef.current = gain;
     analyserRef.current = analyser;
+    setAnalyserState(analyser);
 
     socket.addEventListener("open", () => {
       setIsConnected(true);
-      void context.resume();
+      // Resume AudioContext — required by browsers after user interaction
+      context.resume().then(() => {
+        console.log("[Lyria] AudioContext resumed, state:", context.state);
+      });
       socket.send(
         JSON.stringify({
           type: "setup",
@@ -71,19 +93,29 @@ export function useLyriaStream(
         }),
       );
 
-      const preferredMimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
-      const mediaRecorder = preferredMimeType
-        ? new MediaRecorder(stream, { mimeType: preferredMimeType })
-        : new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.addEventListener("dataavailable", async (event) => {
-        if (event.data.size > 0 && socket.readyState === WebSocket.OPEN) {
-          socket.send(await event.data.arrayBuffer());
+      // Create audio-only stream for MediaRecorder (camera stream has video too)
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length > 0) {
+        const audioOnlyStream = new MediaStream(audioTracks);
+        try {
+          const preferredMimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
+          const mediaRecorder = preferredMimeType
+            ? new MediaRecorder(audioOnlyStream, { mimeType: preferredMimeType })
+            : new MediaRecorder(audioOnlyStream);
+          mediaRecorderRef.current = mediaRecorder;
+          mediaRecorder.addEventListener("dataavailable", async (event) => {
+            if (event.data.size > 0 && socket.readyState === WebSocket.OPEN) {
+              socket.send(await event.data.arrayBuffer());
+            }
+          });
+          console.log("[Lyria] MediaRecorder ready (audio-only)");
+        } catch (err) {
+          console.warn("[Lyria] MediaRecorder creation failed:", err);
         }
-      });
-      mediaRecorder.start(750);
+      }
     });
 
+    let chunkCount = 0;
     socket.addEventListener("message", (event) => {
       if (typeof event.data === "string") {
         const message = JSON.parse(event.data) as {
@@ -91,15 +123,28 @@ export function useLyriaStream(
           data: FanInfluence;
         };
         if (message.type === "influence") {
-          onInfluence?.(message.data);
+          onInfluenceRef.current?.(message.data);
         }
         return;
+      }
+
+      chunkCount++;
+      if (chunkCount <= 3) {
+        console.log(`[Lyria] Audio chunk #${chunkCount}: ${event.data.byteLength} bytes, AudioContext state: ${context.state}`);
+      }
+
+      // Ensure AudioContext is running (may need user gesture)
+      if (context.state === "suspended") {
+        void context.resume();
       }
 
       const pcm = pcm16ToBuffer(context, event.data);
       bufferQueueRef.current.push(pcm);
 
       if (bufferQueueRef.current.length >= BUFFER_TARGET) {
+        if (chunkCount === BUFFER_TARGET) {
+          console.log(`[Lyria] Buffer full (${BUFFER_TARGET} chunks), starting playback. Context state: ${context.state}`);
+        }
         while (bufferQueueRef.current.length > 0) {
           const next = bufferQueueRef.current.shift();
           if (!next || !outputNodeRef.current) {
@@ -120,21 +165,30 @@ export function useLyriaStream(
       setIsConnected(false);
     });
 
+    socket.addEventListener("error", () => {
+      // Silently handle — close event will fire after this
+    });
+
     return () => {
+      connectedSessionRef.current = null;
       const recorder = mediaRecorderRef.current;
       if (recorder && recorder.state !== "inactive") {
         recorder.stop();
       }
-      socket.close();
+      if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+        socket.close();
+      }
       wsRef.current = null;
       void context.close();
       audioContextRef.current = null;
       outputNodeRef.current = null;
       analyserRef.current = null;
+      setAnalyserState(null);
       bufferQueueRef.current = [];
       playheadRef.current = 0;
     };
-  }, [onInfluence, sessionId, stream]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, stream]);
 
   const sendParams = (params: Partial<AudioParams>) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -148,10 +202,31 @@ export function useLyriaStream(
     }
   };
 
+  const startRecording = () => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state === "inactive") {
+      try {
+        recorder.start(750);
+        console.log("[Lyria] Recording started");
+      } catch (err) {
+        console.warn("[Lyria] Failed to start recording:", err);
+      }
+    }
+  };
+
+  const stopRecording = () => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.stop();
+    }
+  };
+
   return {
     isConnected,
-    analyser: analyserRef.current,
+    analyser: analyserState,
     sendParams,
     sendPlaybackControl,
+    startRecording,
+    stopRecording,
   };
 }
