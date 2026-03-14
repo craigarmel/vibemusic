@@ -14,7 +14,7 @@ function formatDuration(seconds: number) {
 }
 
 export function SessionComplete() {
-  const { artist, current_track, fan_influences, setCurrentTrack } = useStudioStore();
+  const { session_artist: artist, current_track, fan_influences, setCurrentTrack } = useStudioStore();
   const [isPublishing, setIsPublishing] = useState(false);
   const [previewAudio, setPreviewAudio] = useState<HTMLAudioElement | null>(null);
 

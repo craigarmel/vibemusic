@@ -14,7 +14,7 @@ export function LiveSessionView() {
   const {
     session_id,
     camera_stream,
-    artist,
+    session_artist: artist,
     music_prompt,
     performance_notes,
     generated_avatar,

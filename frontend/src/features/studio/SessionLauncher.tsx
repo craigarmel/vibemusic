@@ -32,7 +32,7 @@ export function SessionLauncher() {
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
   const {
-    artist,
+    session_artist: artist,
     camera_stream,
     music_prompt,
     performance_notes,

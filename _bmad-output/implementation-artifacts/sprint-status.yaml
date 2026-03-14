@@ -1,0 +1,86 @@
+# generated: 2026-03-14
+# last_updated: 2026-03-14
+# project: vibemusic
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: "{project-root}/_bmad-output/implementation-artifacts"
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-03-14
+last_updated: 2026-03-14
+project: vibemusic
+project_key: NOKEY
+tracking_system: file-system
+story_location: "{project-root}/_bmad-output/implementation-artifacts"
+
+development_status:
+  # Epic 1: Project Foundation & Design System
+  epic-1: done
+  1-1-initialize-monorepo: done
+  1-2-neon-design-system: done
+  1-3-routing-and-stores: done
+  1-4-backend-api-skeleton: done
+  epic-1-retrospective: optional
+
+  # Epic 2: Artist Identity Creation
+  epic-2: in-progress
+  2-1-lore-generation-gemini: done
+  2-2-avatar-generation-nano-banana: done
+  2-3-artist-profile-view: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Live Music Session
+  epic-3: backlog
+  3-1-session-launch-camera-mic: backlog
+  3-2-lyria-realtime-websocket-audio: backlog
+  3-3-realtime-audio-visualizer: backlog
+  3-4-live-session-controls: backlog
+  3-5-session-completion-track-publication: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Video Clip Generation
+  epic-4: backlog
+  4-1-video-generation-veo: backlog
+  4-2-track-gallery-published-content: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Fan Feed Experience
+  epic-5: backlog
+  5-1-fan-feed-vertical-video-scroll: backlog
+  5-2-feed-card-artist-overlay: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Fan Influence & Feedback Loop
+  epic-6: backlog
+  6-1-influence-button-tag-sheet: backlog
+  6-2-influence-confirmation-storage: backlog
+  6-3-feedback-loop-influences-next-session: backlog
+  epic-6-retrospective: optional

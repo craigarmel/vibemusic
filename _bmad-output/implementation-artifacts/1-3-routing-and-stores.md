@@ -1,6 +1,6 @@
 # Story 1.3: Configure Routing and Zustand Stores
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -33,18 +33,18 @@ so that the B2B and B2C views are accessible and state management is ready.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Install dependencies (AC: #1, #2, #3, #4)
-  - [ ] 1.1: `cd frontend && npm install react-router-dom zustand`
-- [ ] Task 2: Configure routing (AC: #1, #2, #5)
-  - [ ] 2.1: Update `App.tsx` with `BrowserRouter`, `Routes`, `Route` for `/studio` and `/feed`
-  - [ ] 2.2: Add redirect from `/` to `/studio`
-  - [ ] 2.3: Create `frontend/src/features/studio/StudioDashboard.tsx` — shell with left sidebar nav (Studio, Library, Analytics, Settings icons per dashboard-screen.png mockup) + main content area placeholder
-  - [ ] 2.4: Create `frontend/src/features/feed/FeedView.tsx` — full-screen shell placeholder, no sidebar
-- [ ] Task 3: Create Zustand stores (AC: #3, #4)
-  - [ ] 3.1: Create `frontend/src/stores/useStudioStore.ts` with state: `artist: ArtistData | null`, `is_generating_lore: boolean`, `is_generating_image: boolean`, `is_generating_audio: boolean`, `is_generating_video: boolean`, `error: string | null` and corresponding setters
-  - [ ] 3.2: Create `frontend/src/stores/useFeedStore.ts` with state: `feed_items: FeedItem[]`, `is_loading: boolean`, `influence_state: InfluenceState | null` and corresponding setters
-  - [ ] 3.3: Create `frontend/src/types/artist.ts` with `ArtistData`, `LoreData` types
-  - [ ] 3.4: Create `frontend/src/types/feed.ts` with `FeedItem`, `InfluenceState`, `InfluenceTag` types
+- [x] Task 1: Install dependencies (AC: #1, #2, #3, #4)
+  - [x] 1.1: `cd frontend && npm install react-router-dom zustand`
+- [x] Task 2: Configure routing (AC: #1, #2, #5)
+  - [x] 2.1: Update `App.tsx` with `BrowserRouter`, `Routes`, `Route` for `/studio` and `/feed`
+  - [x] 2.2: Add redirect from `/` to `/studio`
+  - [x] 2.3: Create `frontend/src/features/studio/StudioDashboard.tsx` — shell with left sidebar nav (Studio, Library, Analytics, Settings icons per dashboard-screen.png mockup) + main content area placeholder
+  - [x] 2.4: Create `frontend/src/features/feed/FeedView.tsx` — full-screen shell placeholder, no sidebar
+- [x] Task 3: Create Zustand stores (AC: #3, #4)
+  - [x] 3.1: Create `frontend/src/stores/useStudioStore.ts` with state: `artist: ArtistData | null`, `is_generating_lore: boolean`, `is_generating_image: boolean`, `is_generating_audio: boolean`, `is_generating_video: boolean`, `error: string | null` and corresponding setters
+  - [x] 3.2: Create `frontend/src/stores/useFeedStore.ts` with state: `feed_items: FeedItem[]`, `is_loading: boolean`, `influence_state: InfluenceState | null` and corresponding setters
+  - [x] 3.3: Create `frontend/src/types/artist.ts` with `ArtistData`, `LoreData` types
+  - [x] 3.4: Create `frontend/src/types/feed.ts` with `FeedItem`, `InfluenceState`, `InfluenceTag` types
 
 ## Dev Notes
 
@@ -117,8 +117,28 @@ export interface ArtistData {
 
 ### Agent Model Used
 
+Claude Opus 4.6 (1M context)
+
 ### Debug Log References
 
 ### Completion Notes List
 
+- Installed react-router-dom v7.13.1 and zustand v5.0.11
+- App.tsx configured with BrowserRouter: / redirects to /studio, /studio renders StudioDashboard, /feed renders FeedView
+- StudioDashboard has left sidebar (w-56) with nav items (Studio, Library, Analytics, Settings) + main content area placeholder
+- FeedView is a full-screen black shell placeholder, no sidebar
+- useStudioStore has artist, 4 generating flags, error, setters, updateArtist, reset
+- useFeedStore has feed_items, is_loading, influence_state, error, setters
+- TypeScript types defined: ArtistData, LoreData, FeedItem, InfluenceTag, InfluenceState
+
 ### File List
+
+- frontend/package.json (modified — added react-router-dom, zustand)
+- frontend/package-lock.json (modified)
+- frontend/src/App.tsx (modified — BrowserRouter routing)
+- frontend/src/features/studio/StudioDashboard.tsx (new)
+- frontend/src/features/feed/FeedView.tsx (new)
+- frontend/src/stores/useStudioStore.ts (new)
+- frontend/src/stores/useFeedStore.ts (new)
+- frontend/src/types/artist.ts (new)
+- frontend/src/types/feed.ts (new)

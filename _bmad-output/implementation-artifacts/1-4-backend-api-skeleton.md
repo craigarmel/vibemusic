@@ -1,6 +1,6 @@
 # Story 1.4: Backend API Skeleton with Health Check
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -34,21 +34,21 @@ so that API endpoints can be added incrementally per feature.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Config and settings (AC: #2)
-  - [ ] 1.1: Implement `app/config.py` with `Settings(BaseSettings)`: `google_ai_api_key: str`, `gemini_model: str = "gemini-2.0-flash"`, `nano_banana_model: str = "gemini-3.1-flash-image-preview"`, `model_config = SettingsConfigDict(env_file=".env")`
-  - [ ] 1.2: Create `backend/.env` from `.env.example` (gitignored) with placeholder values
-- [ ] Task 2: Router skeleton (AC: #3)
-  - [ ] 2.1: Create `app/routers/artist.py` with `router = APIRouter(prefix="/api", tags=["artists"])`
-  - [ ] 2.2: Create `app/routers/audio.py` with `router = APIRouter(prefix="/api", tags=["audio"])`
-  - [ ] 2.3: Create `app/routers/video.py` with `router = APIRouter(prefix="/api", tags=["video"])`
-  - [ ] 2.4: Create `app/routers/feed.py` with `router = APIRouter(prefix="/api", tags=["feed"])`
-  - [ ] 2.5: Include all routers in `main.py`
-- [ ] Task 3: Storage and media (AC: #4, #5)
-  - [ ] 3.1: Implement `app/storage.py` with typed in-memory storage dicts
-  - [ ] 3.2: Ensure `media/avatars/`, `media/audio/`, `media/clips/` directories exist (create in main.py startup or manually)
-  - [ ] 3.3: Mount StaticFiles for `/media` in `main.py`
-- [ ] Task 4: Health check (AC: #1)
-  - [ ] 4.1: Ensure `GET /api/health` returns correct response format
+- [x] Task 1: Config and settings (AC: #2)
+  - [x] 1.1: Implement `app/config.py` with `Settings(BaseSettings)`: `google_ai_api_key: str`, `gemini_model: str = "gemini-2.0-flash"`, `nano_banana_model: str = "gemini-3.1-flash-image-preview"`, `model_config = SettingsConfigDict(env_file=".env")`
+  - [x] 1.2: Create `backend/.env` from `.env.example` (gitignored) with placeholder values
+- [x] Task 2: Router skeleton (AC: #3)
+  - [x] 2.1: Create `app/routers/artist.py` with `router = APIRouter(prefix="/api", tags=["artists"])`
+  - [x] 2.2: Create `app/routers/audio.py` with `router = APIRouter(prefix="/api", tags=["audio"])`
+  - [x] 2.3: Create `app/routers/video.py` with `router = APIRouter(prefix="/api", tags=["video"])`
+  - [x] 2.4: Create `app/routers/feed.py` with `router = APIRouter(prefix="/api", tags=["feed"])`
+  - [x] 2.5: Include all routers in `main.py`
+- [x] Task 3: Storage and media (AC: #4, #5)
+  - [x] 3.1: Implement `app/storage.py` with typed in-memory storage dicts
+  - [x] 3.2: Ensure `media/avatars/`, `media/audio/`, `media/clips/` directories exist (create in main.py startup or manually)
+  - [x] 3.3: Mount StaticFiles for `/media` in `main.py`
+- [x] Task 4: Health check (AC: #1)
+  - [x] 4.1: Ensure `GET /api/health` returns correct response format
 
 ## Dev Notes
 
@@ -103,8 +103,27 @@ Some of these tasks may already be partially done in Story 1.1 (main.py, config.
 
 ### Agent Model Used
 
+Claude Opus 4.6 (1M context)
+
 ### Debug Log References
 
 ### Completion Notes List
 
+- Story 1.4 work was largely completed during Story 1.1 — config.py, storage.py, routers, services, main.py all created
+- Config: Settings(BaseSettings) loads GOOGLE_AI_API_KEY, GEMINI_MODEL, NANO_BANANA_MODEL from .env
+- All 4 routers (artist, audio, video, feed) have APIRouter with /api prefix and are included in main.py
+- storage.py has typed in-memory dicts: artists (dict), clips (list), influences (list)
+- Media dirs created programmatically via os.makedirs in main.py startup
+- /media mounted as StaticFiles
+- Health check at GET /api/health returns correct response format
+- No additional code changes were needed beyond what Story 1.1 already established
+
 ### File List
+
+- backend/app/main.py (verified — routers included, media mounted, health check)
+- backend/app/config.py (verified — Settings with all env vars)
+- backend/app/storage.py (verified — typed in-memory storage)
+- backend/app/routers/artist.py (verified — APIRouter skeleton)
+- backend/app/routers/audio.py (verified — APIRouter skeleton)
+- backend/app/routers/video.py (verified — APIRouter skeleton)
+- backend/app/routers/feed.py (verified — APIRouter skeleton)

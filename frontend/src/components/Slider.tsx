@@ -1,34 +1,48 @@
-import type { ChangeEvent } from "react";
-
 interface SliderProps {
-  label: string;
-  min: number;
-  max: number;
-  step: number;
-  value: number;
-  onChange: (value: number) => void;
+  label: string
+  value: number
+  min?: number
+  max?: number
+  step?: number
+  onChange: (value: number) => void
+  displayValue?: string
 }
 
-export function Slider({ label, min, max, step, value, onChange }: SliderProps) {
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onChange(Number(event.target.value));
-  };
+export function Slider({
+  label,
+  value,
+  min = 0,
+  max = 100,
+  step = 1,
+  onChange,
+  displayValue,
+}: SliderProps) {
+  const percentage = ((value - min) / (max - min)) * 100
 
   return (
-    <label className="flex flex-col gap-2 text-sm text-white/80">
-      <span className="flex items-center justify-between uppercase tracking-[0.2em] text-[11px]">
-        <span>{label}</span>
-        <span className="font-mono text-cyan-300">{value}</span>
-      </span>
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-between items-center">
+        <label className="text-sm text-text-muted uppercase tracking-wider">
+          {label}
+        </label>
+        <span className="text-sm font-mono text-neon-cyan font-semibold">
+          {displayValue ?? value}
+        </span>
+      </div>
       <input
         type="range"
         min={min}
         max={max}
         step={step}
         value={value}
-        onChange={handleChange}
-        className="accent-cyan-300"
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+        style={{
+          background: `linear-gradient(to right, #00f0ff ${percentage}%, rgba(255,255,255,0.1) ${percentage}%)`,
+        }}
       />
-    </label>
-  );
+    </div>
+  )
 }
+
+export default Slider

@@ -1,6 +1,6 @@
 # Story 2.1: Lore Generation via Gemini 3
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -31,28 +31,28 @@ so that I can build the identity of my virtual idol.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Backend — Gemini service (AC: #1)
-  - [ ] 1.1: Install `google-genai` package and add to `requirements.txt`
-  - [ ] 1.2: Add `GOOGLE_AI_API_KEY` and `GEMINI_MODEL` to `app/config.py` Settings class
-  - [ ] 1.3: Create `app/services/gemini.py` with `async def generate_lore(prompt: str) -> dict` function
-  - [ ] 1.4: Implement Gemini API call using `google.genai.Client` with structured prompt for lore generation (name, biography, personality_traits, lyrics)
-- [ ] Task 2: Backend — Artist models and router (AC: #1, #2)
-  - [ ] 2.1: Create `app/models/artist.py` with Pydantic models: `ArtistCreateRequest(prompt: str)`, `LoreData(name, biography, personality_traits, lyrics)`, `ArtistResponse`
-  - [ ] 2.2: Implement `POST /api/artists` endpoint in `app/routers/artist.py`
-  - [ ] 2.3: Store artist in `storage.py` artists dict with generated UUID as key
-  - [ ] 2.4: Return wrapped response `{ "status": "success", "data": { "artist_id": "...", "lore": {...} } }`
-- [ ] Task 3: Backend — Error handling (AC: #4)
-  - [ ] 3.1: Wrap Gemini API calls in try/except, raise `HTTPException(500)` with error detail on failure
-  - [ ] 3.2: Handle timeout/rate-limit scenarios with `HTTPException(503)`
-- [ ] Task 4: Frontend — LoreGenerator component (AC: #3)
-  - [ ] 4.1: Create `frontend/src/api/client.ts` — fetch wrapper with base URL from `VITE_API_URL` env var
-  - [ ] 4.2: Create `frontend/src/api/artist.ts` — `createArtist(prompt: string)` function calling `POST /api/artists`
-  - [ ] 4.3: Add lore state and actions to `useStudioStore` (artist data, `is_generating_lore` flag, `setLore`, `setGeneratingLore`)
-  - [ ] 4.4: Create `frontend/src/features/studio/LoreGenerator.tsx` — text input, "Generate" button, loading spinner, lore display
-  - [ ] 4.5: Wire LoreGenerator into `StudioDashboard.tsx`
-- [ ] Task 5: Frontend — Error handling (AC: #4)
-  - [ ] 5.1: Handle API errors in `createArtist()`, set error state in store
-  - [ ] 5.2: Show toast notification on error using `Toast.tsx` component
+- [x] Task 1: Backend — Gemini service (AC: #1)
+  - [x] 1.1: Install `google-genai` package and add to `requirements.txt`
+  - [x] 1.2: Add `GOOGLE_AI_API_KEY` and `GEMINI_MODEL` to `app/config.py` Settings class
+  - [x] 1.3: Create `app/services/gemini.py` with `async def generate_lore(prompt: str) -> dict` function
+  - [x] 1.4: Implement Gemini API call using `google.genai.Client` with structured prompt for lore generation (name, biography, personality_traits, lyrics)
+- [x] Task 2: Backend — Artist models and router (AC: #1, #2)
+  - [x] 2.1: Create `app/models/artist.py` with Pydantic models: `ArtistCreateRequest(prompt: str)`, `LoreData(name, biography, personality_traits, lyrics)`, `ArtistResponse`
+  - [x] 2.2: Implement `POST /api/artists` endpoint in `app/routers/artist.py`
+  - [x] 2.3: Store artist in `storage.py` artists dict with generated UUID as key
+  - [x] 2.4: Return wrapped response `{ "status": "success", "data": { "artist_id": "...", "lore": {...} } }`
+- [x] Task 3: Backend — Error handling (AC: #4)
+  - [x] 3.1: Wrap Gemini API calls in try/except, raise `HTTPException(500)` with error detail on failure
+  - [x] 3.2: Handle timeout/rate-limit scenarios with `HTTPException(503)`
+- [x] Task 4: Frontend — LoreGenerator component (AC: #3)
+  - [x] 4.1: Create `frontend/src/api/client.ts` — fetch wrapper with base URL from `VITE_API_URL` env var
+  - [x] 4.2: Create `frontend/src/api/artist.ts` — `createArtist(prompt: string)` function calling `POST /api/artists`
+  - [x] 4.3: Add lore state and actions to `useStudioStore` (artist data, `is_generating_lore` flag, `setLore`, `setGeneratingLore`)
+  - [x] 4.4: Create `frontend/src/features/studio/LoreGenerator.tsx` — text input, "Generate" button, loading spinner, lore display
+  - [x] 4.5: Wire LoreGenerator into `StudioDashboard.tsx`
+- [x] Task 5: Frontend — Error handling (AC: #4)
+  - [x] 5.1: Handle API errors in `createArtist()`, set error state in store
+  - [x] 5.2: Show toast notification on error using `Toast.tsx` component
 
 ## Dev Notes
 
@@ -144,10 +144,30 @@ frontend/src/
 
 ### Agent Model Used
 
-(to be filled by dev agent)
+Claude Opus 4.6 (1M context)
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- google-genai SDK installed, Gemini client uses settings.google_ai_api_key
+- Structured prompt template returns JSON with name, biography, personality_traits, lyrics
+- JSON response cleanup handles markdown code block wrapping from Gemini
+- Pydantic models: ArtistCreateRequest, LoreData, ArtistResponse in models/artist.py
+- POST /api/artists generates UUID, validates lore via LoreData model, stores in storage.artists
+- Error handling: 503 for timeout/rate-limit, 500 for other failures
+- Frontend: fetch-based API client (client.ts), createArtist wrapper (artist.ts)
+- LoreGenerator: textarea prompt, generate button with loading spinner, lore display (bio, traits with progress bars, lyrics)
+- Wired into StudioDashboard grid layout (2/3 width left column)
+- Toast error notifications via useStudioStore.error state
+
 ### File List
+
+- backend/app/services/gemini.py (modified — full lore generation implementation)
+- backend/app/models/artist.py (new — ArtistCreateRequest, LoreData, ArtistResponse)
+- backend/app/routers/artist.py (modified — POST /api/artists endpoint)
+- backend/requirements.txt (modified — added google-genai)
+- frontend/src/api/client.ts (new — fetch wrapper with apiPost, apiGet)
+- frontend/src/api/artist.ts (new — createArtist function)
+- frontend/src/features/studio/LoreGenerator.tsx (new)
+- frontend/src/features/studio/StudioDashboard.tsx (modified — wired LoreGenerator)

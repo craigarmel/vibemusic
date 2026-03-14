@@ -1,6 +1,6 @@
 # Story 1.2: Implement Neon Studio Design System & App Shell
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -31,19 +31,19 @@ so that the app feels like a premium AI music studio from the future.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Tailwind theme and global styles (AC: #1, #2)
-  - [ ] 1.1: Update `index.css` with Tailwind import and CSS custom properties for theme colors: `--color-cyan: #00f0ff`, `--color-magenta: #ff00aa`, `--color-purple: #8b5cf6`, `--color-bg: #0a0a0a`, `--color-muted: #a0a0a0`
-  - [ ] 1.2: Add Tailwind `@theme` block to extend colors: `neon-cyan`, `neon-magenta`, `neon-purple`, `bg-dark`, `text-muted`
-  - [ ] 1.3: Add Inter font via Google Fonts CDN link in `index.html` `<head>`
-  - [ ] 1.4: Set global body styles: `bg-[#0a0a0a] text-white font-[Inter] antialiased`
-  - [ ] 1.5: Add glass morphism CSS utilities: `.glass` class with `backdrop-blur-xl bg-white/5 border border-white/10`, `.neon-border` with `border border-[#00f0ff]/30 shadow-[0_0_15px_rgba(0,240,255,0.15)]`
-- [ ] Task 2: Layout component (AC: #3)
-  - [ ] 2.1: Create `frontend/src/components/Layout.tsx` — dark themed wrapper with min-h-screen, flex column
-  - [ ] 2.2: Include Synthetica logo from `/images/logo.png` in header area (small, top-left)
-- [ ] Task 3: Shared UI components (AC: #4)
-  - [ ] 3.1: Create `frontend/src/components/LoadingSpinner.tsx` — animated spinning circle with cyan glow, configurable size
-  - [ ] 3.2: Create `frontend/src/components/Toast.tsx` — toast notification component: glass morphism card, auto-dismiss after 3s, success (cyan border) and error (magenta border) variants
-  - [ ] 3.3: Create `frontend/src/components/Slider.tsx` — styled range input with neon cyan track and thumb, label and value display
+- [x] Task 1: Tailwind theme and global styles (AC: #1, #2)
+  - [x] 1.1: Update `index.css` with Tailwind import and CSS custom properties for theme colors
+  - [x] 1.2: Add Tailwind `@theme` block to extend colors: `neon-cyan`, `neon-magenta`, `neon-purple`, `bg-dark`, `text-muted`, `bg-card`, `border-subtle`
+  - [x] 1.3: Add Inter + JetBrains Mono fonts via Google Fonts CDN link in `index.html`
+  - [x] 1.4: Set global body styles in index.html and CSS
+  - [x] 1.5: Add glass morphism utilities (`.glass`, `.glass-strong`, `.neon-border`, `.neon-border-magenta`, `.neon-glow`, `.neon-text`) + button utilities (`.btn-primary`, `.btn-magenta`)
+- [x] Task 2: Layout component (AC: #3)
+  - [x] 2.1: Create `frontend/src/components/Layout.tsx` — dark themed wrapper with min-h-screen, flex column
+  - [x] 2.2: Include Synthetica logo from `/images/logo.png` in header area (small, top-left)
+- [x] Task 3: Shared UI components (AC: #4)
+  - [x] 3.1: Create `frontend/src/components/LoadingSpinner.tsx` — animated spinning circle with cyan glow, sm/md/lg sizes
+  - [x] 3.2: Create `frontend/src/components/Toast.tsx` — glass morphism card, auto-dismiss, success (cyan) and error (magenta) variants
+  - [x] 3.3: Create `frontend/src/components/Slider.tsx` — styled range input with neon cyan gradient track, label and value display
 
 ## Dev Notes
 
@@ -109,8 +109,25 @@ The following Stitch mockups are in `frontend/public/templates/` — use these a
 
 ### Agent Model Used
 
+Claude Opus 4.6 (1M context)
+
 ### Debug Log References
 
 ### Completion Notes List
 
+- Tailwind v4 @theme block defines 7 custom colors + 2 custom font families
+- Glass morphism: `.glass` (light) and `.glass-strong` (heavier blur) utilities
+- Neon effects: `.neon-border`, `.neon-border-magenta`, `.neon-glow`, `.neon-text`
+- Button utilities: `.btn-primary` (cyan-purple gradient), `.btn-magenta` (magenta-purple gradient) with hover glow
+- Layout wraps all pages with logo header and dark bg
+- Toast auto-dismisses after configurable duration, transitions with opacity/translate
+- Slider shows dynamic cyan fill percentage via inline style
+
 ### File List
+
+- frontend/index.html (modified — title, fonts, favicon, body class)
+- frontend/src/index.css (modified — @theme, glass, neon, button utilities)
+- frontend/src/components/Layout.tsx (new)
+- frontend/src/components/LoadingSpinner.tsx (new)
+- frontend/src/components/Toast.tsx (new)
+- frontend/src/components/Slider.tsx (new)

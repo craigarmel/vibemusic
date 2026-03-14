@@ -1,6 +1,6 @@
 # Story 1.1: Initialize Monorepo with Frontend and Backend Scaffolding
 
-Status: review
+Status: done
 
 ## Story
 
@@ -221,3 +221,4 @@ Claude Opus 4.6 (1M context)
 - backend/media/audio/.gitkeep (new)
 - backend/media/clips/.gitkeep (new)
 - .gitignore (new)
+- .env.example (new — root, referencing frontend and backend env files)

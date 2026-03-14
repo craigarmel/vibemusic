@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { ArtistData } from "../types/artist";
 import type {
   AvatarAsset,
   Artist,
@@ -8,8 +9,34 @@ import type {
   TrackRecord,
 } from "../types/studio";
 
+// ---------------------------------------------------------------------------
+// Unified studio state — combines Epic 1+2 (artist creation / lore / avatar)
+// with Epic 3 (live session / camera / audio).
+// ---------------------------------------------------------------------------
+
 interface StudioState {
-  artist: Artist;
+  // --- Epic 1+2: Artist creation ---
+  artist: ArtistData | null;
+  is_generating_lore: boolean;
+  is_generating_image: boolean;
+  is_generating_audio: boolean;
+  is_generating_video: boolean;
+  error: string | null;
+
+  setArtist: (artist: ArtistData) => void;
+  updateArtist: (updates: Partial<ArtistData>) => void;
+  setGeneratingLore: (val: boolean) => void;
+  setGeneratingImage: (val: boolean) => void;
+  setGeneratingAudio: (val: boolean) => void;
+  setGeneratingVideo: (val: boolean) => void;
+  setError: (error: string | null) => void;
+  reset: () => void;
+
+  // --- Epic 3: Live session ---
+  /** Lightweight artist record used by the session flow.
+   *  Populated from `artist` (ArtistData) when a session starts, or set
+   *  independently for quick-start sessions. */
+  session_artist: Artist;
   camera_stream: MediaStream | null;
   session_id: string | null;
   is_session_active: boolean;
@@ -24,6 +51,7 @@ interface StudioState {
   avatar_prompt: string;
   avatar_reference_image: string | null;
   generated_avatar: AvatarAsset | null;
+
   setCameraStream: (stream: MediaStream | null) => void;
   setSessionError: (message: string | null) => void;
   startSession: (session: SessionRecord, stream: MediaStream) => void;
@@ -40,14 +68,45 @@ interface StudioState {
   setGeneratedAvatar: (avatar: AvatarAsset | null) => void;
 }
 
+const DEFAULT_SESSION_ARTIST: Artist = {
+  artist_id: "artist-neon-01",
+  name: "NEON MIRAGE",
+  genre_tags: ["Techno", "Dark Ambient"],
+  biography:
+    "Cyborg chanteuse de Neo-Paris. Elle transforme la rumeur urbaine en pulsations froides et nocturnes.",
+};
+
 export const useStudioStore = create<StudioState>((set) => ({
-  artist: {
-    artist_id: "artist-neon-01",
-    name: "NEON MIRAGE",
-    genre_tags: ["Techno", "Dark Ambient"],
-    biography:
-      "Cyborg chanteuse de Neo-Paris. Elle transforme la rumeur urbaine en pulsations froides et nocturnes.",
-  },
+  // --- Epic 1+2 defaults ---
+  artist: null,
+  is_generating_lore: false,
+  is_generating_image: false,
+  is_generating_audio: false,
+  is_generating_video: false,
+  error: null,
+
+  setArtist: (artist) => set({ artist, error: null }),
+  updateArtist: (updates) =>
+    set((state) => ({
+      artist: state.artist ? { ...state.artist, ...updates } : null,
+    })),
+  setGeneratingLore: (val) => set({ is_generating_lore: val }),
+  setGeneratingImage: (val) => set({ is_generating_image: val }),
+  setGeneratingAudio: (val) => set({ is_generating_audio: val }),
+  setGeneratingVideo: (val) => set({ is_generating_video: val }),
+  setError: (error) => set({ error }),
+  reset: () =>
+    set({
+      artist: null,
+      is_generating_lore: false,
+      is_generating_image: false,
+      is_generating_audio: false,
+      is_generating_video: false,
+      error: null,
+    }),
+
+  // --- Epic 3 defaults ---
+  session_artist: DEFAULT_SESSION_ARTIST,
   camera_stream: null,
   session_id: null,
   is_session_active: false,
@@ -68,6 +127,7 @@ export const useStudioStore = create<StudioState>((set) => ({
   avatar_prompt: "Chrome vocalist, cinematic lighting, futuristic streetwear",
   avatar_reference_image: null,
   generated_avatar: null,
+
   setCameraStream: (stream) => set({ camera_stream: stream }),
   setSessionError: (message) => set({ session_error: message }),
   startSession: (session, stream) =>
@@ -105,6 +165,8 @@ export const useStudioStore = create<StudioState>((set) => ({
   setGeneratedAvatar: (avatar) =>
     set((state) => ({
       generated_avatar: avatar,
-      artist: avatar ? { ...state.artist, avatar_url: avatar.image_url } : state.artist,
+      session_artist: avatar
+        ? { ...state.session_artist, avatar_url: avatar.image_url }
+        : state.session_artist,
     })),
 }));

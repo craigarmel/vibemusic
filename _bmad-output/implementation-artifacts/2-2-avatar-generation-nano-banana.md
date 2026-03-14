@@ -1,6 +1,6 @@
 # Story 2.2: Avatar Generation via Nano Banana 2
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -33,30 +33,30 @@ so that the artist has a recognizable face across all content.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Backend — Nano Banana 2 service (AC: #1, #3)
-  - [ ] 1.1: Add `NANO_BANANA_MODEL` to `app/config.py` Settings class (default: `gemini-3.1-flash-image-preview`)
-  - [ ] 1.2: Create `app/services/nano_banana.py` with `async def generate_avatar(artist_name: str, artist_description: str, existing_avatar_prompt: str | None = None) -> bytes`
-  - [ ] 1.3: Implement image generation using `google.genai.Client` with `generate_content()` — model `gemini-3.1-flash-image-preview`, config `response_modalities=['IMAGE']`
-  - [ ] 1.4: Build character-consistent prompt: include artist name, physical description from lore, and style keywords. For regeneration, include reference to previous prompt for consistency.
-  - [ ] 1.5: Extract image bytes from response parts, return raw bytes
-- [ ] Task 2: Backend — Avatar models and router endpoint (AC: #1, #2)
-  - [ ] 2.1: Add to `app/models/artist.py`: `AvatarResponse(avatar_url: str, artist_id: str)`
-  - [ ] 2.2: Implement `POST /api/artists/{artist_id}/avatar` in `app/routers/artist.py`
-  - [ ] 2.3: Save image bytes to `media/avatars/{artist_id}_{timestamp}.png` using `aiofiles` or sync write
-  - [ ] 2.4: Update artist in `storage.py` with `avatar_url` and `avatar_prompt` (for consistency on regeneration)
-  - [ ] 2.5: Return wrapped response `{ "status": "success", "data": { "avatar_url": "/media/avatars/..." } }`
-- [ ] Task 3: Backend — Error handling (AC: #4)
-  - [ ] 3.1: Wrap Nano Banana API calls in try/except, raise `HTTPException(500)` on failure
-  - [ ] 3.2: Validate `artist_id` exists in storage before generating — return 404 if not found
-- [ ] Task 4: Frontend — AvatarGenerator component (AC: #1, #2, #3)
-  - [ ] 4.1: Add to `frontend/src/api/artist.ts`: `generateAvatar(artistId: string)` calling `POST /api/artists/{artist_id}/avatar`
-  - [ ] 4.2: Add avatar state to `useStudioStore`: `avatar_url: string | null`, `is_generating_image: boolean`, `setAvatar()`, `setGeneratingImage()`
-  - [ ] 4.3: Create `frontend/src/features/studio/AvatarGenerator.tsx` — "Generate Avatar" button, loading state, avatar display (circle, neon border), "Regenerate" button after first generation
-  - [ ] 4.4: Display avatar as 200px circle with animated neon cyan border glow (per UX spec)
-  - [ ] 4.5: Wire AvatarGenerator into `StudioDashboard.tsx` (show after lore is generated)
-- [ ] Task 5: Frontend — Error handling (AC: #4)
-  - [ ] 5.1: Handle API errors in `generateAvatar()`, set error state in store
-  - [ ] 5.2: Show toast notification on error
+- [x] Task 1: Backend — Nano Banana 2 service (AC: #1, #3)
+  - [x] 1.1: Add `NANO_BANANA_MODEL` to `app/config.py` Settings class (default: `gemini-3.1-flash-image-preview`)
+  - [x] 1.2: Create `app/services/nano_banana.py` with `async def generate_avatar(artist_name: str, artist_description: str, existing_avatar_prompt: str | None = None) -> bytes`
+  - [x] 1.3: Implement image generation using `google.genai.Client` with `generate_content()` — model `gemini-3.1-flash-image-preview`, config `response_modalities=['IMAGE']`
+  - [x] 1.4: Build character-consistent prompt: include artist name, physical description from lore, and style keywords. For regeneration, include reference to previous prompt for consistency.
+  - [x] 1.5: Extract image bytes from response parts, return raw bytes
+- [x] Task 2: Backend — Avatar models and router endpoint (AC: #1, #2)
+  - [x] 2.1: Add to `app/models/artist.py`: `AvatarResponse(avatar_url: str, artist_id: str)`
+  - [x] 2.2: Implement `POST /api/artists/{artist_id}/avatar` in `app/routers/artist.py`
+  - [x] 2.3: Save image bytes to `media/avatars/{artist_id}_{timestamp}.png` using sync write
+  - [x] 2.4: Update artist in `storage.py` with `avatar_url` and `avatar_prompt` (for consistency on regeneration)
+  - [x] 2.5: Return wrapped response `{ "status": "success", "data": { "avatar_url": "/media/avatars/..." } }`
+- [x] Task 3: Backend — Error handling (AC: #4)
+  - [x] 3.1: Wrap Nano Banana API calls in try/except, raise `HTTPException(500)` on failure
+  - [x] 3.2: Validate `artist_id` exists in storage before generating — return 404 if not found
+- [x] Task 4: Frontend — AvatarGenerator component (AC: #1, #2, #3)
+  - [x] 4.1: Add to `frontend/src/api/artist.ts`: `generateAvatar(artistId: string)` calling `POST /api/artists/{artist_id}/avatar`
+  - [x] 4.2: Add avatar state to `useStudioStore`: `avatar_url: string | null`, `is_generating_image: boolean`, `setAvatar()`, `setGeneratingImage()`
+  - [x] 4.3: Create `frontend/src/features/studio/AvatarGenerator.tsx` — "Generate Avatar" button, loading state, avatar display (circle, neon border), "Regenerate" button after first generation
+  - [x] 4.4: Display avatar as 200px circle with animated neon cyan border glow (per UX spec)
+  - [x] 4.5: Wire AvatarGenerator into `StudioDashboard.tsx` (show after lore is generated)
+- [x] Task 5: Frontend — Error handling (AC: #4)
+  - [x] 5.1: Handle API errors in `generateAvatar()`, set error state in store
+  - [x] 5.2: Show toast notification on error
 
 ## Dev Notes
 
@@ -167,10 +167,27 @@ frontend/src/
 
 ### Agent Model Used
 
-(to be filled by dev agent)
+Claude Opus 4.6 (1M context)
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- nano_banana.py: generate_avatar() returns (image_bytes, prompt_used) tuple for consistency tracking
+- Character consistency: stores avatar_prompt in backend storage dict; on regeneration appends "same character, different angle" instruction to original prompt
+- Note: avatar_prompt is backend-internal state only — never exposed via API responses. Frontend ArtistData type intentionally omits it.
+- Image saved as PNG to media/avatars/{artist_id}_{timestamp}.png with sync write
+- Router validates artist_id exists (404), handles timeout/rate-limit (503), generic errors (500)
+- AvatarGenerator: 192px circle display, dashed placeholder before generation, neon-border after
+- Button switches between "Generate Avatar" (btn-primary) and "Regenerate Avatar" (outline cyan)
+- Personality traits shown as cyan pill tags below avatar (first 3 traits)
+- Wired into StudioDashboard right column (1/3 width), only renders when artist exists
+
 ### File List
+
+- backend/app/services/nano_banana.py (modified — full avatar generation implementation)
+- backend/app/models/artist.py (modified — added AvatarResponse)
+- backend/app/routers/artist.py (modified — POST /api/artists/{artist_id}/avatar endpoint)
+- frontend/src/api/artist.ts (modified — added generateAvatar function)
+- frontend/src/features/studio/AvatarGenerator.tsx (new)
+- frontend/src/features/studio/StudioDashboard.tsx (modified — wired AvatarGenerator)
